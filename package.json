@@ -17,14 +17,22 @@
     "app-router",
     "react"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -44,5 +52,6 @@
     "react-dom": "^18.2.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
-  }
+  },
+  "sideEffects": false
 }
