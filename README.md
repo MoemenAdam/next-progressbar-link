@@ -27,14 +27,6 @@ In Next.js App Router with Server Components, navigation can sometimes take a mo
 npm install next-progressbar-link
 ```
 
-```bash
-yarn add next-progressbar-link
-```
-
-```bash
-pnpm add next-progressbar-link
-```
-
 ## Requirements
 
 - Next.js with App Router (required)
