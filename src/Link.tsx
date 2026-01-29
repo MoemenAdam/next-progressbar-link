@@ -1,7 +1,7 @@
 'use client';
 import NextLink, { LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, ReactNode, forwardRef } from 'react';
+import { useEffect, ReactNode, forwardRef } from 'react';
 import { useNavigationContext } from './NavigationContext';
 import { ProgressBar } from './ProgressBar';
 
@@ -14,10 +14,6 @@ export type ProgressDirection =
   | 'left-to-top'
   | 'right-to-bottom'
   | 'right-to-top';
-
-// Custom event name
-const NAVIGATION_START_EVENT = 'navigation-start';
-const NAVIGATION_END_EVENT = 'navigation-end';
 
 interface NavigationProgressProps {
   direction?: ProgressDirection;

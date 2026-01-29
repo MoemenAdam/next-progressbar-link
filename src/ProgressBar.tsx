@@ -82,12 +82,6 @@ export const ProgressBar = ({
 }: ProgressBarProps) => {
   const [progress, setProgress] = useState(0);
   const [shouldShow, setShouldShow] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
 
   useEffect(() => {
     if (isLoading) {
@@ -96,10 +90,10 @@ export const ProgressBar = ({
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) return prev;
-          const increment = Math.random() * 10;
+          const increment = Math.random() * 5;
           return Math.min(prev + increment, 90);
         });
-      }, 200);
+      }, 50);
 
       return () => clearInterval(interval);
     } else if (shouldShow) {
@@ -112,10 +106,7 @@ export const ProgressBar = ({
     }
   }, [isLoading, shouldShow]);
 
-  if (!shouldShow || !mounted) return null;
-
-  const isVertical =
-    direction.startsWith('left-') || direction.startsWith('right-');
+  if (!shouldShow) return null;
 
   const progressBar = (
     <div
@@ -127,8 +118,7 @@ export const ProgressBar = ({
     >
       <div
         className={cn(
-          'transition-transform duration-300 ease-out',
-          isVertical ? 'h-full w-full' : 'h-full w-full',
+          'transition-transform duration-300 ease-out h-full w-full',
           progressClassName
         )}
         style={{
