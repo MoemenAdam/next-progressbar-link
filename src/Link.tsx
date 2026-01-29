@@ -1,7 +1,7 @@
 'use client';
 import NextLink, { LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, ReactNode, forwardRef } from 'react';
+import { useEffect, ReactNode, forwardRef, CSSProperties } from 'react';
 import { useNavigationContext } from './NavigationContext';
 import { ProgressBar } from './ProgressBar';
 
@@ -17,16 +17,20 @@ export type ProgressDirection =
 
 interface NavigationProgressProps {
   direction?: ProgressDirection;
-  containerClassName?: string;
-  progressClassName?: string;
+  containerStyle?: CSSProperties;
+  progressStyle?: CSSProperties;
   color?: string;
+  height?: string;
+  width?: string;
 }
 
 export const NavigationProgress = ({
   direction = 'top-to-right',
-  containerClassName = '',
-  progressClassName = '',
+  containerStyle = {},
+  progressStyle = {},
   color = '#00b207',
+  height,
+  width,
 }: NavigationProgressProps) => {
   const { isNavigating, setIsNavigating } = useNavigationContext();
   const pathname = usePathname();
@@ -41,9 +45,11 @@ export const NavigationProgress = ({
     <ProgressBar
       isLoading={isNavigating}
       direction={direction}
-      containerClassName={containerClassName}
-      progressClassName={progressClassName}
+      containerStyle={containerStyle}
+      progressStyle={progressStyle}
       color={color}
+      height={height}
+      width={width}
     />
   );
 };

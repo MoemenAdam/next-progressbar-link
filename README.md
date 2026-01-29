@@ -40,14 +40,16 @@ Add the `NavigationProgress` component inside the `<body>` tag of your root layo
 
 ```tsx
 // app/layout.tsx
-import { NavigationProgress } from 'next-progressbar-link';
+import { NavigationProvider, NavigationProgress } from 'next-progressbar-link';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <NavigationProgress />
-        {children}
+        <NavigationProvider>
+          <NavigationProgress />
+          {children}
+        </NavigationProvider>
       </body>
     </html>
   );

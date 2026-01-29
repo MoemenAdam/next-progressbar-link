@@ -1,34 +1,66 @@
 'use client';
 import { ProgressDirection } from './Link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+const getPositionStyles = (direction: ProgressDirection): CSSProperties => {
+  const baseStyles: CSSProperties = {
+    position: 'fixed',
+    zIndex: 50,
+  };
 
-const getPositionClasses = (direction: ProgressDirection) => {
   switch (direction) {
     case 'top-to-right':
     case 'top-to-left':
-      return 'top-0 left-0 w-full h-1';
+      return {
+        ...baseStyles,
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '4px',
+      };
     case 'bottom-to-right':
     case 'bottom-to-left':
-      return 'bottom-0 left-0 w-full h-1';
+      return {
+        ...baseStyles,
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        height: '4px',
+      };
     case 'left-to-bottom':
     case 'left-to-top':
-      return 'top-0 left-0 h-full w-1';
+      return {
+        ...baseStyles,
+        top: 0,
+        left: 0,
+        height: '100%',
+        width: '4px',
+      };
     case 'right-to-bottom':
     case 'right-to-top':
-      return 'top-0 right-0 h-full w-1';
+      return {
+        ...baseStyles,
+        top: 0,
+        right: 0,
+        height: '100%',
+        width: '4px',
+      };
     default:
-      return 'top-0 left-0 w-full h-1';
+      return {
+        ...baseStyles,
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '4px',
+      };
   }
 };
 
-const getProgressStyle = (progress: number, direction: ProgressDirection) => {
+const getProgressStyle = (
+  progress: number,
+  direction: ProgressDirection
+): CSSProperties => {
   const scale = progress / 100;
 
   switch (direction) {
@@ -68,17 +100,21 @@ const getProgressStyle = (progress: number, direction: ProgressDirection) => {
 interface ProgressBarProps {
   isLoading: boolean;
   direction?: ProgressDirection;
-  containerClassName?: string;
-  progressClassName?: string;
+  containerStyle?: CSSProperties;
+  progressStyle?: CSSProperties;
   color?: string;
+  height?: string;
+  width?: string;
 }
 
 export const ProgressBar = ({
   isLoading,
   direction = 'top-to-right',
-  containerClassName = '',
-  progressClassName = '',
+  containerStyle = {},
+  progressStyle = {},
   color = '#00b207',
+  height,
+  width,
 }: ProgressBarProps) => {
   const [progress, setProgress] = useState(0);
   const [shouldShow, setShouldShow] = useState(false);
@@ -108,23 +144,35 @@ export const ProgressBar = ({
 
   if (!shouldShow) return null;
 
+  const positionStyles = getPositionStyles(direction);
+
+  if (height) {
+    if (direction.includes('top') || direction.includes('bottom')) {
+      positionStyles.height = height;
+    }
+  }
+  if (width) {
+    if (direction.includes('left') || direction.includes('right')) {
+      positionStyles.width = width;
+    }
+  }
+
   const progressBar = (
     <div
-      className={cn(
-        'fixed z-50',
-        getPositionClasses(direction),
-        containerClassName
-      )}
+      style={{
+        ...positionStyles,
+        ...containerStyle,
+      }}
     >
       <div
-        className={cn(
-          'transition-transform duration-300 ease-out h-full w-full',
-          progressClassName
-        )}
         style={{
-          ...getProgressStyle(progress, direction),
+          height: '100%',
+          width: '100%',
+          transition: 'transform 300ms ease-out',
           backgroundColor: color,
           boxShadow: `0 2px 10px ${color}`,
+          ...getProgressStyle(progress, direction),
+          ...progressStyle,
         }}
       />
     </div>
