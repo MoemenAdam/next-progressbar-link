@@ -1,7 +1,7 @@
 'use client';
 import Link, { LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, forwardRef } from 'react';
 import { ProgressBar } from './ProgressBar';
 
 let globalIsNavigating = false;
@@ -59,45 +59,40 @@ export const NavigationProgress = ({
   );
 };
 
-interface CustomLinkProps extends LinkProps {
-  target?: string;
+export interface CustomLinkProps extends LinkProps {
   children: ReactNode;
   className?: string;
+  target?: string;
+  style?: React.CSSProperties;
 }
 
-const CustomLink = ({
-  href,
-  target,
-  children,
-  className = '',
-  ...props
-}: CustomLinkProps) => {
-  const pathname = usePathname();
+const CustomLink = forwardRef<HTMLAnchorElement, CustomLinkProps>(
+  ({ href, children, className, target, ...props }, ref) => {
+    const pathname = usePathname();
 
-  const handleClick = () => {
-    const targetPath = typeof href === 'string' ? href : href.pathname || '';
+    const handleClick: React.MouseEventHandler<HTMLAnchorElement> = () => {
+      const targetPath = typeof href === 'string' ? href : href.pathname || '';
+      if (targetPath === pathname || globalIsNavigating) return;
 
-    if (targetPath === pathname || globalIsNavigating) {
-      return;
-    }
+      globalIsNavigating = true;
+      if (globalSetNavigating) globalSetNavigating(true);
+    };
 
-    globalIsNavigating = true;
-    if (globalSetNavigating) {
-      globalSetNavigating(true);
-    }
-  };
+    return (
+      <Link
+        href={href}
+        onClick={handleClick}
+        ref={ref}
+        className={className}
+        target={target}
+        {...props}
+      >
+        {children}
+      </Link>
+    );
+  }
+);
 
-  return (
-    <Link
-      href={href}
-      onClick={handleClick}
-      className={className}
-      target={target}
-      {...props}
-    >
-      {children}
-    </Link>
-  );
-};
+CustomLink.displayName = 'CustomLink';
 
 export default CustomLink;
