@@ -59,7 +59,7 @@ export interface ProgressLinkProps extends LinkProps {
   style?: React.CSSProperties;
 }
 
-const Link = forwardRef<HTMLAnchorElement, ProgressLinkProps>(
+export const Link = forwardRef<HTMLAnchorElement, ProgressLinkProps>(
   ({ href, children, className, target, ...props }, ref) => {
     const { setIsNavigating } = useNavigationContext();
     const pathname = usePathname();
@@ -92,5 +92,3 @@ const Link = forwardRef<HTMLAnchorElement, ProgressLinkProps>(
 );
 
 Link.displayName = 'Link';
-
-export default Link;
