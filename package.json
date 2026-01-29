@@ -1,9 +1,14 @@
 {
   "name": "next-progressbar-link",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight progress bar for Next.js App Router that integrates seamlessly with next/link.",
   "license": "MIT",
   "author": "Moemen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoemenAdam/next-progressbar-link.git"
+  },
+  "homepage": "https://next-progressbar-link-demo.vercel.app/",
   "keywords": [
     "nextjs",
     "progress-bar",
