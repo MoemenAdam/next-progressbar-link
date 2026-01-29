@@ -1,14 +1,7 @@
 'use client';
-import Link, { LinkProps } from 'next/link';
+import NextLink, { LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  useState,
-  useEffect,
-  ReactNode,
-  forwardRef,
-  createContext,
-  useContext,
-} from 'react';
+import { useState, useEffect, ReactNode, forwardRef } from 'react';
 import { ProgressBar } from './ProgressBar';
 
 export type ProgressDirection =
@@ -21,19 +14,15 @@ export type ProgressDirection =
   | 'right-to-bottom'
   | 'right-to-top';
 
-interface NavigationContextType {
-  isNavigating: boolean;
-  setIsNavigating: (value: boolean) => void;
-}
-
-const NavigationContext = createContext<NavigationContextType | null>(null);
+// Custom event name
+const NAVIGATION_START_EVENT = 'navigation-start';
+const NAVIGATION_END_EVENT = 'navigation-end';
 
 interface NavigationProgressProps {
   direction?: ProgressDirection;
   containerClassName?: string;
   progressClassName?: string;
   color?: string;
-  children?: ReactNode;
 }
 
 export const NavigationProgress = ({
@@ -41,59 +30,77 @@ export const NavigationProgress = ({
   containerClassName = '',
   progressClassName = '',
   color = '#00b207',
-  children,
 }: NavigationProgressProps) => {
   const [isNavigating, setIsNavigating] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    if (isNavigating) {
+    const handleNavigationStart = () => {
+      setIsNavigating(true);
+    };
+
+    const handleNavigationEnd = () => {
       setIsNavigating(false);
+    };
+
+    window.addEventListener(NAVIGATION_START_EVENT, handleNavigationStart);
+    window.addEventListener(NAVIGATION_END_EVENT, handleNavigationEnd);
+
+    return () => {
+      window.removeEventListener(NAVIGATION_START_EVENT, handleNavigationStart);
+      window.removeEventListener(NAVIGATION_END_EVENT, handleNavigationEnd);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isNavigating) {
+      // Dispatch end event when pathname changes
+      window.dispatchEvent(new Event(NAVIGATION_END_EVENT));
     }
   }, [pathname, isNavigating]);
 
   return (
-    <NavigationContext.Provider value={{ isNavigating, setIsNavigating }}>
-      <ProgressBar
-        isLoading={isNavigating}
-        direction={direction}
-        containerClassName={containerClassName}
-        progressClassName={progressClassName}
-        color={color}
-      />
-      {children}
-    </NavigationContext.Provider>
+    <ProgressBar
+      isLoading={isNavigating}
+      direction={direction}
+      containerClassName={containerClassName}
+      progressClassName={progressClassName}
+      color={color}
+    />
   );
 };
 
-export interface CustomLinkProps extends LinkProps {
+export interface ProgressLinkProps extends LinkProps {
   children: ReactNode;
   className?: string;
   target?: string;
   style?: React.CSSProperties;
 }
 
-const CustomLink = forwardRef<HTMLAnchorElement, CustomLinkProps>(
+const Link = forwardRef<HTMLAnchorElement, ProgressLinkProps>(
   ({ href, children, className, target, ...props }, ref) => {
     const pathname = usePathname();
-    const context = useContext(NavigationContext);
 
     const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
       const targetPath = typeof href === 'string' ? href : href.pathname || '';
 
-      // Check if it's an external link or same page
-      if (target === '_blank' || targetPath === pathname) return;
+      // Don't show progress for external links
+      if (target === '_blank') return;
 
-      // Check if it's a hash link on the same page
-      if (targetPath.startsWith('#')) return;
+      // Don't show progress for same page
+      if (targetPath === pathname) return;
 
-      if (context) {
-        context.setIsNavigating(true);
+      // Don't show progress for hash links
+      if (typeof href === 'string' && href.startsWith('#')) return;
+
+      // Dispatch custom event to start progress
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event(NAVIGATION_START_EVENT));
       }
     };
 
     return (
-      <Link
+      <NextLink
         href={href}
         onClick={handleClick}
         ref={ref}
@@ -102,11 +109,11 @@ const CustomLink = forwardRef<HTMLAnchorElement, CustomLinkProps>(
         {...props}
       >
         {children}
-      </Link>
+      </NextLink>
     );
   }
 );
 
-CustomLink.displayName = 'CustomLink';
+Link.displayName = 'Link';
 
-export default CustomLink;
+export default Link;
