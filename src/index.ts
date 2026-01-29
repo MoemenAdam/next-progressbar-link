@@ -1,2 +1,3 @@
-export { NavigationProgress } from './Link';
+'use client';
+export { NavigationProgress, ProgressDirection } from './Link';
 export { default } from './Link';
