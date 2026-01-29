@@ -1,27 +1,39 @@
 'use client';
 import Link, { LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, ReactNode, forwardRef } from 'react';
+import {
+  useState,
+  useEffect,
+  ReactNode,
+  forwardRef,
+  createContext,
+  useContext,
+} from 'react';
 import { ProgressBar } from './ProgressBar';
 
-let globalIsNavigating = false;
-let globalSetNavigating: ((value: boolean) => void) | null = null;
-
 export type ProgressDirection =
-  | 'top-to-right' // Top, from left to right
-  | 'top-to-left' // Top, from right to left
-  | 'bottom-to-right' // Bottom, from left to right
-  | 'bottom-to-left' // Bottom, from right to left
-  | 'left-to-bottom' // Left, from top to bottom
-  | 'left-to-top' // Left, from bottom to top
-  | 'right-to-bottom' // Right, from top to bottom
-  | 'right-to-top'; // Right, from bottom to top
+  | 'top-to-right'
+  | 'top-to-left'
+  | 'bottom-to-right'
+  | 'bottom-to-left'
+  | 'left-to-bottom'
+  | 'left-to-top'
+  | 'right-to-bottom'
+  | 'right-to-top';
+
+interface NavigationContextType {
+  isNavigating: boolean;
+  setIsNavigating: (value: boolean) => void;
+}
+
+const NavigationContext = createContext<NavigationContextType | null>(null);
 
 interface NavigationProgressProps {
   direction?: ProgressDirection;
   containerClassName?: string;
   progressClassName?: string;
   color?: string;
+  children?: ReactNode;
 }
 
 export const NavigationProgress = ({
@@ -29,33 +41,28 @@ export const NavigationProgress = ({
   containerClassName = '',
   progressClassName = '',
   color = '#00b207',
+  children,
 }: NavigationProgressProps) => {
   const [isNavigating, setIsNavigating] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    globalSetNavigating = setIsNavigating;
-    return () => {
-      globalSetNavigating = null;
-    };
-  }, []);
-
-  useEffect(() => {
     if (isNavigating) {
       setIsNavigating(false);
-      globalIsNavigating = false;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, isNavigating]);
 
   return (
-    <ProgressBar
-      isLoading={isNavigating}
-      direction={direction}
-      containerClassName={containerClassName}
-      progressClassName={progressClassName}
-      color={color}
-    />
+    <NavigationContext.Provider value={{ isNavigating, setIsNavigating }}>
+      <ProgressBar
+        isLoading={isNavigating}
+        direction={direction}
+        containerClassName={containerClassName}
+        progressClassName={progressClassName}
+        color={color}
+      />
+      {children}
+    </NavigationContext.Provider>
   );
 };
 
@@ -69,13 +76,20 @@ export interface CustomLinkProps extends LinkProps {
 const CustomLink = forwardRef<HTMLAnchorElement, CustomLinkProps>(
   ({ href, children, className, target, ...props }, ref) => {
     const pathname = usePathname();
+    const context = useContext(NavigationContext);
 
-    const handleClick: React.MouseEventHandler<HTMLAnchorElement> = () => {
+    const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
       const targetPath = typeof href === 'string' ? href : href.pathname || '';
-      if (targetPath === pathname || globalIsNavigating) return;
 
-      globalIsNavigating = true;
-      if (globalSetNavigating) globalSetNavigating(true);
+      // Check if it's an external link or same page
+      if (target === '_blank' || targetPath === pathname) return;
+
+      // Check if it's a hash link on the same page
+      if (targetPath.startsWith('#')) return;
+
+      if (context) {
+        context.setIsNavigating(true);
+      }
     };
 
     return (
