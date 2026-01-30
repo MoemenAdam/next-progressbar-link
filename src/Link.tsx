@@ -59,10 +59,11 @@ export interface ProgressLinkProps extends LinkProps {
   className?: string;
   target?: string;
   style?: React.CSSProperties;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
 const Link = forwardRef<HTMLAnchorElement, ProgressLinkProps>(
-  ({ href, children, className, target, ...props }, ref) => {
+  ({ href, children, className, target, onClick, ...props }, ref) => {
     const { setIsNavigating } = useNavigationContext();
     const pathname = usePathname();
 
@@ -76,6 +77,7 @@ const Link = forwardRef<HTMLAnchorElement, ProgressLinkProps>(
 
       // Start progress
       setIsNavigating(true);
+      onClick?.(e);
     };
 
     return (
